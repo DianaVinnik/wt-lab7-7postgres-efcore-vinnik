@@ -4,23 +4,43 @@ using wt_lab7_7postgres_efcore_vinnik.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Регистрация DbContext для работы с PostgreSQL
+// 1. Логика получения строки подключения
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+// 2. Если есть переменная окружения DATABASE_URL 
+if (!string.IsNullOrWhiteSpace(databaseUrl))
+{
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+}
+
+// 3. Регистрация DbContext
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-// Автоматическое применение миграций при запуске 
+// 4. Автоматическое применение миграций при запуске
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
 
+// --- ЭНДПОИНТЫ ---
+
 // Блок 1: Тестовые эндпоинты
 app.MapGet("/", () => "Minimal API с PostgreSQL работает!");
 
-// Блок 3: GET запросы 
+app.MapGet("/api/info", () => new 
+{ 
+    Application = "Банковская система", 
+    Technology = "ASP.NET Core + EF Core + PostgreSQL", 
+    Version = "1.0" 
+});
+
+// Блок 3: GET запросы
 app.MapGet("/api/accounts", async (string? search, AppDbContext db) =>
 {
     var query = db.Accounts.AsQueryable();
@@ -73,41 +93,24 @@ app.MapDelete("/api/accounts/{id}", async (int id, AppDbContext db) =>
     return Results.NoContent();
 });
 
-//  Использование LINQ (минимум 3 запроса)
-
-// 1. Фильтрация (баланс больше 1000)
+// LINQ-запросы (Фильтрация, сортировка, выборка)
 app.MapGet("/api/accounts/filter", async (AppDbContext db) =>
 {
-    var accounts = await db.Accounts
-        .Where(x => x.Balance > 1000)
-        .ToListAsync();
+    var accounts = await db.Accounts.Where(x => x.Balance > 1000).ToListAsync();
     return Results.Ok(accounts);
 });
 
-// 2. Сортировка (по балансу)
 app.MapGet("/api/accounts/sorted", async (AppDbContext db) =>
 {
-    var accounts = await db.Accounts
-        .OrderBy(x => x.Balance)
-        .ToListAsync();
+    var accounts = await db.Accounts.OrderBy(x => x.Balance).ToListAsync();
     return Results.Ok(accounts);
 });
 
-// 3. Выборка с условием (только активные, отсортированные по имени)
 app.MapGet("/api/accounts/active", async (AppDbContext db) =>
 {
     var accounts = await db.Accounts
         .Where(x => x.IsActive)
         .OrderBy(x => x.Owner)
-        .ToListAsync();
-    return Results.Ok(accounts);
-});
-
-// 4. Собственный запрос (поиск по типу счета)
-app.MapGet("/api/accounts/type/{type}", async (string type, AppDbContext db) =>
-{
-    var accounts = await db.Accounts
-        .Where(x => x.AccountType.ToLower() == type.ToLower())
         .ToListAsync();
     return Results.Ok(accounts);
 });
