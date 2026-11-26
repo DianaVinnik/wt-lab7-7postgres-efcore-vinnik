@@ -44,6 +44,10 @@ namespace wt_lab6_6minimalapi_vinnik.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -63,6 +67,7 @@ namespace wt_lab6_6minimalapi_vinnik.Migrations
                             AccountType = "Сберегательный",
                             Balance = 2500m,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "",
                             IsActive = true,
                             Owner = "Иван Иванов"
                         },
@@ -73,6 +78,7 @@ namespace wt_lab6_6minimalapi_vinnik.Migrations
                             AccountType = "Кредитный",
                             Balance = 5000m,
                             CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "",
                             IsActive = true,
                             Owner = "Анна Петрова"
                         });

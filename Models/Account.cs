@@ -19,4 +19,7 @@ public class Account
     public bool IsActive { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public string Description { get; set; } = string.Empty;
 }
+
