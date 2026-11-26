@@ -4,11 +4,11 @@ using wt_lab7_7postgres_efcore_vinnik.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Логика получения строки подключения
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// 1. Получаем строку подключения
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
-// 2. Если есть переменная окружения DATABASE_URL 
+// 2. Если есть DATABASE_URL (на Render), преобразуем URL в формат Npgsql
 if (!string.IsNullOrWhiteSpace(databaseUrl))
 {
     var uri = new Uri(databaseUrl);
@@ -93,7 +93,7 @@ app.MapDelete("/api/accounts/{id}", async (int id, AppDbContext db) =>
     return Results.NoContent();
 });
 
-// LINQ-запросы (Фильтрация, сортировка, выборка)
+// Блок 17: LINQ-запросы (Фильтрация, сортировка, выборка)
 app.MapGet("/api/accounts/filter", async (AppDbContext db) =>
 {
     var accounts = await db.Accounts.Where(x => x.Balance > 1000).ToListAsync();
