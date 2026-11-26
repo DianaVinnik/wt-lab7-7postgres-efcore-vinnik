@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\Desktop\\WT\\wt-lab6-6minimalapi-vinnik\\wt-lab6-6minimalapi-vinnik.csproj": {}
+    "C:\\Users\\User\\Desktop\\WT\\wt-lab7-7postgres-efcore-vinnik\\wt-lab6-6minimalapi-vinnik.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\Desktop\\WT\\wt-lab6-6minimalapi-vinnik\\wt-lab6-6minimalapi-vinnik.csproj": {
+    "C:\\Users\\User\\Desktop\\WT\\wt-lab7-7postgres-efcore-vinnik\\wt-lab6-6minimalapi-vinnik.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Desktop\\WT\\wt-lab6-6minimalapi-vinnik\\wt-lab6-6minimalapi-vinnik.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Desktop\\WT\\wt-lab7-7postgres-efcore-vinnik\\wt-lab6-6minimalapi-vinnik.csproj",
         "projectName": "wt-lab6-6minimalapi-vinnik",
-        "projectPath": "C:\\Users\\User\\Desktop\\WT\\wt-lab6-6minimalapi-vinnik\\wt-lab6-6minimalapi-vinnik.csproj",
+        "projectPath": "C:\\Users\\User\\Desktop\\WT\\wt-lab7-7postgres-efcore-vinnik\\wt-lab6-6minimalapi-vinnik.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Desktop\\WT\\wt-lab6-6minimalapi-vinnik\\obj\\",
+        "outputPath": "C:\\Users\\User\\Desktop\\WT\\wt-lab7-7postgres-efcore-vinnik\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -52,6 +52,10 @@
           "targetAlias": "net9.0",
           "dependencies": {
             "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[9.0.0, )"
             },

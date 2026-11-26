@@ -30,3 +30,4 @@ C:\Users\User\Desktop\WT\wt-lab6-6minimalapi-vinnik\obj\Debug\net9.0\refint\wt-l
 C:\Users\User\Desktop\WT\wt-lab6-6minimalapi-vinnik\obj\Debug\net9.0\wt-lab6-6minimalapi-vinnik.pdb
 C:\Users\User\Desktop\WT\wt-lab6-6minimalapi-vinnik\obj\Debug\net9.0\wt-lab6-6minimalapi-vinnik.genruntimeconfig.cache
 C:\Users\User\Desktop\WT\wt-lab6-6minimalapi-vinnik\obj\Debug\net9.0\ref\wt-lab6-6minimalapi-vinnik.dll
+C:\Users\User\Desktop\WT\wt-lab6-6minimalapi-vinnik\obj\Debug\net9.0\wt-lab6-6minimalapi-vinnik.sourcelink.json

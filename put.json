@@ -1,0 +1,7 @@
+{
+  "owner": "Иван Иванов",
+  "accountNumber": "BY001",
+  "balance": 9999,
+  "accountType": "Сберегательный",
+  "isActive": true
+}

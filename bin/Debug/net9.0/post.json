@@ -1,0 +1,7 @@
+{
+  "owner": "Тестовый Пользователь",
+  "accountNumber": "BY999",
+  "balance": 1000,
+  "accountType": "Сберегательный",
+  "isActive": true
+}

@@ -1,62 +1,55 @@
-using wt_lab6_6minimalapi_vinnik.Data;
-using wt_lab6_6minimalapi_vinnik.Models;
+using Microsoft.EntityFrameworkCore;
+using wt_lab7_7postgres_efcore_vinnik.Data;
+using wt_lab7_7postgres_efcore_vinnik.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Блок 6: Добавляем встроенный OpenAPI для документации
-builder.Services.AddOpenApi();
+// Регистрация DbContext для работы с PostgreSQL
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-// Включаем OpenAPI в режиме разработки
-if (app.Environment.IsDevelopment())
+// Автоматическое применение миграций при запуске 
+using (var scope = app.Services.CreateScope())
 {
-    app.MapOpenApi();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
 }
 
 // Блок 1: Тестовые эндпоинты
-app.MapGet("/", () => "Minimal API работает!");
+app.MapGet("/", () => "Minimal API с PostgreSQL работает!");
 
-app.MapGet("/api/info", () => new
+// Блок 3: GET запросы 
+app.MapGet("/api/accounts", async (string? search, AppDbContext db) =>
 {
-    Application = "Банковская система",
-    Technology = "ASP.NET Core Minimal API",
-    Version = "1.0"
-});
-
-// Блок 3: GET запросы (с фильтрацией через query-параметр)
-app.MapGet("/api/accounts", (string? search) =>
-{
-    var accounts = AccountStore.Accounts.AsEnumerable();
+    var query = db.Accounts.AsQueryable();
     if (!string.IsNullOrWhiteSpace(search))
     {
-        accounts = accounts.Where(x => x.Owner.Contains(search, StringComparison.OrdinalIgnoreCase));
+        query = query.Where(x => x.Owner.ToLower().Contains(search.ToLower()));
     }
-    return Results.Ok(accounts);
+    return Results.Ok(await query.ToListAsync());
 });
 
-// Блок 3: GET запрос по ID
-app.MapGet("/api/accounts/{id}", (int id) =>
+app.MapGet("/api/accounts/{id}", async (int id, AppDbContext db) =>
 {
-    var account = AccountStore.Accounts.FirstOrDefault(x => x.Id == id);
+    var account = await db.Accounts.FirstOrDefaultAsync(x => x.Id == id);
     if (account == null) return Results.NotFound();
     return Results.Ok(account);
 });
 
-// Блок 4: POST запрос (Создание с автоматическим ID и статусом 201 Created)
-app.MapPost("/api/accounts", (Account account) =>
+// Блок 4: POST запрос (Создание)
+app.MapPost("/api/accounts", async (Account account, AppDbContext db) =>
 {
-    var newId = AccountStore.Accounts.Count == 0 ? 1 : AccountStore.Accounts.Max(x => x.Id) + 1;
-    account.Id = newId;
-    AccountStore.Accounts.Add(account);
-    
-    return Results.Created($"/api/accounts/{newId}", account);
+    db.Accounts.Add(account);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/accounts/{account.Id}", account);
 });
 
 // Блок 5: PUT запрос (Обновление)
-app.MapPut("/api/accounts/{id}", (int id, Account updatedAccount) =>
+app.MapPut("/api/accounts/{id}", async (int id, Account updatedAccount, AppDbContext db) =>
 {
-    var account = AccountStore.Accounts.FirstOrDefault(x => x.Id == id);
+    var account = await db.Accounts.FirstOrDefaultAsync(x => x.Id == id);
     if (account == null) return Results.NotFound();
 
     account.Owner = updatedAccount.Owner;
@@ -65,19 +58,60 @@ app.MapPut("/api/accounts/{id}", (int id, Account updatedAccount) =>
     account.AccountType = updatedAccount.AccountType;
     account.IsActive = updatedAccount.IsActive;
 
+    await db.SaveChangesAsync();
     return Results.Ok(account);
 });
 
-// Блок 5: DELETE запрос (Удаление со статусом 204 No Content)
-app.MapDelete("/api/accounts/{id}", (int id) =>
+// Блок 5: DELETE запрос (Удаление)
+app.MapDelete("/api/accounts/{id}", async (int id, AppDbContext db) =>
 {
-    var account = AccountStore.Accounts.FirstOrDefault(x => x.Id == id);
+    var account = await db.Accounts.FirstOrDefaultAsync(x => x.Id == id);
     if (account == null) return Results.NotFound();
 
-    AccountStore.Accounts.Remove(account);
+    db.Accounts.Remove(account);
+    await db.SaveChangesAsync();
     return Results.NoContent();
 });
 
-// Блок 7: Настройка порта для Render
+//  Использование LINQ (минимум 3 запроса)
+
+// 1. Фильтрация (баланс больше 1000)
+app.MapGet("/api/accounts/filter", async (AppDbContext db) =>
+{
+    var accounts = await db.Accounts
+        .Where(x => x.Balance > 1000)
+        .ToListAsync();
+    return Results.Ok(accounts);
+});
+
+// 2. Сортировка (по балансу)
+app.MapGet("/api/accounts/sorted", async (AppDbContext db) =>
+{
+    var accounts = await db.Accounts
+        .OrderBy(x => x.Balance)
+        .ToListAsync();
+    return Results.Ok(accounts);
+});
+
+// 3. Выборка с условием (только активные, отсортированные по имени)
+app.MapGet("/api/accounts/active", async (AppDbContext db) =>
+{
+    var accounts = await db.Accounts
+        .Where(x => x.IsActive)
+        .OrderBy(x => x.Owner)
+        .ToListAsync();
+    return Results.Ok(accounts);
+});
+
+// 4. Собственный запрос (поиск по типу счета)
+app.MapGet("/api/accounts/type/{type}", async (string type, AppDbContext db) =>
+{
+    var accounts = await db.Accounts
+        .Where(x => x.AccountType.ToLower() == type.ToLower())
+        .ToListAsync();
+    return Results.Ok(accounts);
+});
+
+// Настройка порта для Render
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 app.Run($"http://0.0.0.0:{port}");
